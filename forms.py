@@ -8,5 +8,5 @@ class StockForm(FlaskForm):
     submit = SubmitField('Add')
 
 class GenreForm(FlaskForm):
-    genre = SelectField('Genre')
+    genre = SelectField('Genre', validators = [DataRequired()])
     submit = SubmitField('Generate Playlist')

@@ -13,16 +13,16 @@
 
   <form action="" method="post" novalidate>
   <div class="w3-display-container w3-center w3-bordered" style="padding-top: 40px; padding-bottom: 40px;">
-      {{ form.hidden_tag() }}
+      {{ form_stock.hidden_tag() }}
         <table class="w3-display-middle">
           <tr>
-            <td>{{ form.ticker.label }}</td>
-            <td>{{ form.quantity.label }}</td>
+            <td>{{ form_stock.ticker.label }}</td>
+            <td>{{ form_stock.quantity.label }}</td>
           </tr>
           <tr>
-            <td>{{ form.ticker(size = 20) }} </td>
-            <td>{{ form.quantity(size = 5) }}</td>
-            <td> {{ form.submit }} </td>
+            <td>{{ form_stock.ticker(size = 20) }} </td>
+            <td>{{ form_stock.quantity(size = 5) }}</td>
+            <td> {{ form_stock.submit }} </td>
           </tr>
         </table>
     </div>
@@ -104,7 +104,7 @@
 <div class="w3-container">
   <form action="" method="post" novalidate>
 
-    <!-- {{ form.hidden_tag() }} -->
+    {{ form_genre.hidden_tag() }}
 
     <select name="genre">
 
@@ -116,7 +116,7 @@
 
     </select>
 
-    <!-- {{ form.submit }} -->
+    {{ form_genre.submit }}
 
   </form>
 </div>

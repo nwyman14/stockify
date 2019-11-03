@@ -54,12 +54,13 @@ stocksList = collections.OrderedDict()
 # final_change=0
 @app.route('/table', methods=['GET','POST'])
 def table():
-    form1 = StockForm()
+    form_stock = StockForm()
+    form_genre = GenreForm()
     final_change=0
     msg = ''
-    if form1.validate_on_submit():
-        ticker = form1.ticker.data
-        quantity = form1.quantity.data
+    if form_stock.validate_on_submit():
+        ticker = form_stock.ticker.data
+        quantity = form_stock.quantity.data
 
         if ticker not in tickerSet:
             msg = 'Please enter a valid ticker.'
@@ -70,7 +71,7 @@ def table():
             stocksList[ticker] = {'name':ticker}
             stocksList[ticker]['quantity']=quantity
         symbols_list = ''
-        for s in list(stocksList.keys()):
+        for s in stocksList.keys():
             symbols_list+=s+','
         symbols_list=symbols_list[:-1]
         PARAMS = {
@@ -80,7 +81,6 @@ def table():
 
         response = requests.get('https://api.worldtradingdata.com/api/v1/stock',params=PARAMS)
         data = response.json()
-
 
         for stock in data['data']:
             final_change += float(stock['day_change'])*float(stocksList[stock['symbol']]['quantity'])
@@ -96,49 +96,31 @@ def table():
             else:
                 stocksList[stock]['color'] = "w3-text-red"
 
-    # # Import from db - just to show functionality
+    try:
+        access_token = 'dfhsjkdfhds'
+        sp = spotipy.Spotify(auth=access_token)
+    except:
 
-    if request.method == 'POST':
-        return render_template('table.html', stockList=stocksList, msg=msg, form=form1)
-    else:
-        return render_template('table.html', stockList=stocksList, form=form1, msg=msg, genres=genres)
+        grant_type = 'client_credentials'
+        body_params = {'grant_type' : grant_type}
 
-@app.route('/generate_playlist',methods=['GET','POST'])
-def generate_playlist():
-    final_change = FINAL_CHANGE[0]
-    form = GenreForm()
+        url='https://accounts.spotify.com/api/token'
 
-    if form.validate_on_submit():
-        searchq = form2.genre.data
+        r=requests.post(url, data=body_params, auth = (client_id, client_secret))
+        data = r.json()
+        access_token = data['access_token']
 
+        sp = spotipy.Spotify(auth=access_token)
 
+    if form_genre.validate_on_submit():
+        searchq = form_genre.genre.data
         if final_change >= 0:
             searchq = "happy " + searchq
         else:
             searchq = "sad " + searchq
-
-
-        try:
-            access_token = 'dfhsjkdfhds'
-            sp = spotipy.Spotify(auth=access_token)
-            happytracks = sp.search(q=searchq, limit=30, type='playlist')
-        except:
-
-            grant_type = 'client_credentials'
-            body_params = {'grant_type' : grant_type}
-
-            url='https://accounts.spotify.com/api/token'
-
-            r=requests.post(url, data=body_params, auth = (client_id, client_secret))
-            data = r.json()
-            access_token = data['access_token']
-
-            sp = spotipy.Spotify(auth=access_token)
-
-            happytracks = sp.search(q=searchq, limit=20, type='playlist')
+        happytracks = sp.search(q=searchq, limit=30, type='playlist')
 
         list = happytracks['playlists']['items']
-
         length = len(list)
 
         track_names = []
@@ -154,12 +136,66 @@ def generate_playlist():
         one_track_url = track_urls[n]
         one_track_image = track_images[n]
 
-        # return render_template('music.html',track_names=track_names,track_urls=track_urls,length=length)
+        return render_template('music.html',track_names=track_names,track_urls=track_urls,length=length)
 
-        return render_template('music.html',one_track_url=one_track_url,one_track_name=one_track_name,one_track_image=one_track_image,form=form)
-
-    else:
-
-        return render_template('music.html',one_track_url=one_track_url,one_track_name=one_track_name,one_track_image=one_track_image,form=form)
+    # if request.method == 'POST':
+    #     return render_template('table.html', stockList=stocksList, msg=msg, form_stock=form_stock, form_genre=form_genre)
+    # else:
+    return render_template('table.html', stockList=stocksList, form_stock=form_stock, msg=msg, genres=genres, form_genre=form_genre)
+#
+# @app.route('/generate_playlist',methods=['GET','POST'])
+# def generate_playlist():
+#     final_change = FINAL_CHANGE[0]
+#     form_genre = GenreForm()
+#     form_stock = StockForm()
+#     searchq = 'happy'
+#     if final_change >= 0:
+#         searchq = "happy " + searchq
+#     else:
+#         searchq = "sad " + searchq
+#
+#
+#     try:
+#         access_token = 'dfhsjkdfhds'
+#         sp = spotipy.Spotify(auth=access_token)
+#         happytracks = sp.search(q=searchq, limit=30, type='playlist')
+#     except:
+#
+#         grant_type = 'client_credentials'
+#         body_params = {'grant_type' : grant_type}
+#
+#         url='https://accounts.spotify.com/api/token'
+#
+#         r=requests.post(url, data=body_params, auth = (client_id, client_secret))
+#         data = r.json()
+#         access_token = data['access_token']
+#
+#         sp = spotipy.Spotify(auth=access_token)
+#
+#         happytracks = sp.search(q=searchq, limit=20, type='playlist')
+#
+#     if form_stock.validate_on_submit():
+#         list = happytracks['playlists']['items']
+#
+#         length = len(list)
+#
+#         track_names = []
+#         track_urls = []
+#         track_images = []
+#         for track in list:
+#             track_names.append(track['name'])
+#             track_urls.append(track['external_urls']['spotify'])
+#             track_images.append(track['images'][0]['url'])
+#
+#         n = random.randint(0,length-1)
+#         one_track_name = track_names[n]
+#         one_track_url = track_urls[n]
+#         one_track_image = track_images[n]
+#
+#     # return render_template('music.html',track_names=track_names,track_urls=track_urls,length=length)
+#
+#     return render_template('music.html',one_track_url=one_track_url,one_track_name=one_track_name,one_track_image=one_track_image)
+#
+#     # return render_template('table.html', stockList=stocksList, form_genre=form_genre, form_stock=form_stock, msg=msg, genres=genres)
 
 app.run()
